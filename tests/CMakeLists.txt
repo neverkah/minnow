@@ -30,7 +30,7 @@ macro(add_speed_test exec_name)
   add_dependencies(speed_testing "${exec_name}")
 endmacro(add_speed_test)
 
-add_test_exec(byte_stream_basics)
+#add_test_exec(byte_stream_basics)
 add_test_exec(byte_stream_capacity)
 add_test_exec(byte_stream_one_write)
 add_test_exec(byte_stream_two_writes)

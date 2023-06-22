@@ -5,3 +5,4 @@ macro(add_app exec_name)
 endmacro(add_app)
 
 add_app(webget)
+add_app(ttt)
