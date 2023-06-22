@@ -10,15 +10,7 @@ void Writer::push( string data )
 {
   // Your code here.
   //
-  size_t len = data.length();
-  if (len > _capacity - _buffer.size()) {
-    len = _capacity - _buffer.size();
-  }
-  _write_count += len;
-  string s;
-  s.assign(data.begin(), data.begin() + len);
-  _buffer.append(BufferList(std::move(s)));
-  return len;
+
 
   size_t len = min( available_capacity(), data.length() );
   for ( size_t i = 0; i < len; i++ ) {

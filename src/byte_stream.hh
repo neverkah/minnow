@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include "util/buffer.hh"
+
 
 class Reader;
 class Writer;
@@ -12,7 +12,7 @@ class Writer;
 class ByteStream
 {
 protected:
-  BufferList _buffer = {};
+  std::deque<char> _buffer = {};
   uint64_t capacity_;
   std::deque<char> buffer_ = {};
   // Please add any additional state to the ByteStream here, and not to the Writer and Reader interfaces.
