@@ -3,7 +3,6 @@
 #include <queue>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 
 class Reader;
 class Writer;
@@ -12,7 +11,13 @@ class ByteStream
 {
 protected:
   uint64_t capacity_;
+  std::string buffer_ = {};
   // Please add any additional state to the ByteStream here, and not to the Writer and Reader interfaces.
+  bool input_ended_flag_ = false;
+  bool error_flag_ = false;
+  uint64_t bytes_popped_count_ = 0;
+  uint64_t bytes_pushed_count_ = 0;
+  uint64_t begin_idx_ = 0;
 
 public:
   explicit ByteStream( uint64_t capacity );
