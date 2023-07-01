@@ -32,7 +32,6 @@ int main()
       test.execute( AvailableCapacity { 0 } );
       test.execute( BytesBuffered { 2 } );
       test.execute( Peek { "ca" } );
-      cout << "sucess" << endl;
     }
 
     {

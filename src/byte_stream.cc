@@ -11,11 +11,11 @@ void Writer::push( string data )
   // Your code here.
   //
 
-
-  size_t len = min( available_capacity(), data.length() );
-  for ( size_t i = 0; i < len; i++ ) {
-    this->buffer_.push_back( data[i] );
+  size_t const len = min( available_capacity(), data.length() );
+  if ( len == 0 ) {
+    return;
   }
+  buffer_.append( data, 0, len );
   bytes_pushed_count_ += len;
 }
 
@@ -40,7 +40,7 @@ bool Writer::is_closed() const
 uint64_t Writer::available_capacity() const
 {
   // Your code here.
-  return this->capacity_ - buffer_.size();
+  return this->capacity_ - ( buffer_.length() - begin_idx_ );
 }
 
 uint64_t Writer::bytes_pushed() const
@@ -52,23 +52,14 @@ uint64_t Writer::bytes_pushed() const
 string_view Reader::peek() const
 {
   // Your code here.
-  if ( !buffer_.empty() ) {
-    //    char c = buffer_.front();
-    //
-    //    char* xx = { &c };
-    //    //    string const s = string().append( 1, c );
-    //    string_view peekResult = xx;
-    //    return peekResult;
-    string const s = {buffer_.front()};
-    return  {s};
-  }
-  return {};
+
+  return { &buffer_[begin_idx_], bytes_buffered() };
 }
 
 bool Reader::is_finished() const
 {
   // Your code here.
-  return buffer_.empty() && input_ended_flag_;
+  return bytes_buffered() == 0 && input_ended_flag_;
 }
 
 bool Reader::has_error() const
@@ -80,16 +71,19 @@ bool Reader::has_error() const
 void Reader::pop( uint64_t len )
 {
   // Your code here.
-  for ( uint64_t i = 0; i < len; ++i ) {
-    buffer_.pop_front();
+  uint64_t const actual_len = min( len, buffer_.length() - begin_idx_ );
+  begin_idx_ += actual_len;
+  bytes_popped_count_ += actual_len;
+  if ( begin_idx_ > capacity_ / 2 ) {
+    buffer_.erase( 0, begin_idx_ );
+    begin_idx_ = 0;
   }
-  bytes_popped_count_ += len;
 }
 
 uint64_t Reader::bytes_buffered() const
 {
   // Your code here.
-  return buffer_.size();
+  return buffer_.size() - begin_idx_;
 }
 
 uint64_t Reader::bytes_popped() const

@@ -6,3 +6,5 @@ endmacro(add_app)
 
 add_app(webget)
 add_app(ttt)
+add_app(t2)
+add_app(t3)
