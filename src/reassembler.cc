@@ -6,10 +6,12 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
 {
 
   if ( data.length() > 0 ) {
+    if ( first_index + data.length() <= output.bytes_pushed() ) {
+      return;
+    }
+
     if ( first_index < output.bytes_pushed() ) {
-      data.erase( 0,
-                  first_index + data.length() <= output.bytes_pushed() ? data.length()
-                                                                       : output.bytes_pushed() - first_index );
+      data.erase( 0, output.bytes_pushed() - first_index );
       first_index = output.bytes_pushed();
     }
     if ( first_index + data.length() - output.bytes_pushed() > output.available_capacity() ) {
@@ -34,7 +36,6 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   }
   if ( is_last_substring ) {
     total_len_ = first_index + data.size();
-    //    cout << "total_len: " << total_len_ << endl;
     last_piece_appeared_ = true;
   }
 
