@@ -6,6 +6,13 @@
 
 class Reassembler
 {
+protected:
+  std::string un_buffered_ {};
+  std::vector<bool> filled_ {};
+  uint64_t total_len_ = 0;
+  bool last_piece_appeared_ = false;
+  uint64_t bytes_pending_count_ = 0;
+
 public:
   /*
    * Insert a new substring to be reassembled into a ByteStream.
