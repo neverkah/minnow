@@ -53,7 +53,5 @@ public:
     // How many bytes are stored in the Reassembler itself?
     uint64_t bytes_pending() const;
 
-
-    void
-    merge_data(Reassembler::block_node left_node, Reassembler::block_node &node, Reassembler::block_node right_node);
+  void merge_data( block_node& node, block_node& killed_node );
 };
