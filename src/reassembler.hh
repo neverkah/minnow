@@ -2,16 +2,30 @@
 
 #include "byte_stream.hh"
 
+#include <set>
 #include <string>
 
-class Reassembler
-{
+class Reassembler {
 protected:
-  std::string un_buffered_ {};
-  std::vector<bool> filled_ {};
-  uint64_t total_len_ = 0;
-  bool last_piece_appeared_ = false;
-  uint64_t bytes_pending_count_ = 0;
+    struct block_node {
+        size_t first_index_ = 0;
+        size_t last_index_ = 0;
+        std::string data_ = {};
+
+        block_node() = default;
+
+        block_node(size_t firstIndex, const std::string &data)
+                : first_index_(firstIndex), last_index_(firstIndex + data.length() - 1), data_(data) {}
+
+
+        bool operator<(const block_node t) const { return this->first_index_ > t.first_index_; }
+    };
+
+    std::set<block_node> blocks_ = {};
+
+    uint64_t total_len_ = 0;
+    bool last_piece_appeared_ = false;
+    uint64_t bytes_pending_count_ = 0;
 
 public:
   /*
@@ -36,6 +50,10 @@ public:
    */
   void insert( uint64_t first_index, std::string data, bool is_last_substring, Writer& output );
 
-  // How many bytes are stored in the Reassembler itself?
-  uint64_t bytes_pending() const;
+    // How many bytes are stored in the Reassembler itself?
+    uint64_t bytes_pending() const;
+
+
+    void
+    merge_data(Reassembler::block_node left_node, Reassembler::block_node &node, Reassembler::block_node right_node);
 };
