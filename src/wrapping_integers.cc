@@ -1,8 +1,5 @@
 #include "wrapping_integers.hh"
-#include "stdlib.h"
-#include <algorithm>
 #include <cstdlib>
-#include <limits>
 
 using namespace std;
 
@@ -14,10 +11,8 @@ Wrap32 Wrap32::wrap( uint64_t n, Wrap32 zero_point )
 
 uint64_t Wrap32::unwrap( Wrap32 zero_point, uint64_t checkpoint ) const
 {
-
   u_int64_t const offset = raw_value_ < zero_point.raw_value_ ? ( 1UL << 32 ) - zero_point.raw_value_ + raw_value_
                                                               : raw_value_ - zero_point.raw_value_;
-
   uint64_t const checkpoint_relative = checkpoint & UINT32_MAX;
   u_int64_t left_index = 0;
   u_int64_t right_index = 0;
