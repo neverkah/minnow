@@ -5,45 +5,43 @@ using namespace std;
 void Reassembler::insert( uint64_t first_index, string data, bool is_last_substring, Writer& output )
 {
 
-  if ( data.length() > 0 ) {
-    if ( first_index + data.length() <= output.bytes_pushed() ) {
-      return;
-    }
-
-    if ( first_index < output.bytes_pushed() ) {
-      data.erase( 0, output.bytes_pushed() - first_index );
-      first_index = output.bytes_pushed();
-    }
-    if ( first_index + data.length() - output.bytes_pushed() > output.available_capacity() ) {
-
-      if ( first_index < output.bytes_pushed() + output.available_capacity() ) {
-        data.erase( output.bytes_pushed() + output.available_capacity() - first_index );
-      } else {
-        return;
-      }
-    }
-
-    for ( uint64_t i = first_index; i < first_index + data.length(); i++ ) {
-      if ( filled_.size() > i && filled_[i] ) {
-        filled_[i] = false;
-        bytes_pending_count_--;
-      }
-    }
-  }
-
-  if ( output.available_capacity() < data.length() + bytes_pending() ) {
-    return;
-  }
   if ( is_last_substring ) {
     total_len_ = first_index + data.size();
     last_piece_appeared_ = true;
   }
 
-  if ( data.length() == 0 ) {
+  if ( data.empty() ) {
     if ( last_piece_appeared_ && output.bytes_pushed() == total_len_ ) {
       output.close();
+    }
+    return;
+  }
+
+  if ( first_index + data.length() <= output.bytes_pushed() ) {
+    return;
+  }
+
+  if ( first_index < output.bytes_pushed() ) {
+    data.erase( 0, output.bytes_pushed() - first_index );
+    first_index = output.bytes_pushed();
+  }
+  if ( first_index + data.length() - output.bytes_pushed() > output.available_capacity() ) {
+
+    if ( first_index < output.bytes_pushed() + output.available_capacity() ) {
+      data.erase( output.bytes_pushed() + output.available_capacity() - first_index );
+    } else {
       return;
     }
+  }
+
+  for ( uint64_t i = first_index; i < first_index + data.length(); i++ ) {
+    if ( filled_.size() > i && filled_[i] ) {
+      filled_[i] = false;
+      bytes_pending_count_--;
+    }
+  }
+
+  if ( output.available_capacity() < data.length() + bytes_pending() ) {
     return;
   }
 
