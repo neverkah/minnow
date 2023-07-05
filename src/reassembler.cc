@@ -35,8 +35,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   block_node const base_node = { node.last_index_ + 1, {} };
   auto lower_it = blocks_.lower_bound( base_node );
   while ( lower_it != blocks_.end() && lower_it->last_index_ + 1 >= node.first_index_ ) {
-    block_node killed_node = *lower_it;
-    merge_data( node, killed_node );
+    merge_data( node, *lower_it );
     bytes_pending_count_ -= lower_it->data_.length();
     blocks_.erase( lower_it );
     lower_it = blocks_.lower_bound( base_node );
@@ -58,17 +57,17 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   }
 }
 
-void Reassembler::merge_data( Reassembler::block_node& node, Reassembler::block_node& killed_node )
+void Reassembler::merge_data( Reassembler::block_node& node, const Reassembler::block_node& killed_node )
 {
   string left_str = {};
   string right_str = {};
   if ( killed_node.first_index_ < node.first_index_ ) {
-    left_str = killed_node.data_.substr( 0, node.first_index_ - killed_node.first_index_ );
+    left_str = { killed_node.data_.data(), node.first_index_ - killed_node.first_index_ };
     node.first_index_ = killed_node.first_index_;
   }
   if ( killed_node.last_index_ > node.last_index_ ) {
-    right_str = killed_node.data_.substr( node.last_index_ + 1 - killed_node.first_index_,
-                                          killed_node.last_index_ - node.last_index_ );
+    right_str = { &killed_node.data_[node.last_index_ + 1 - killed_node.first_index_],
+                  killed_node.last_index_ - node.last_index_ };
     node.last_index_ = killed_node.last_index_;
   }
   node.data_ = left_str.append( node.data_ ).append( right_str );
