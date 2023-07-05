@@ -30,4 +30,5 @@ public:
 
   Wrap32 operator+( uint32_t n ) const { return Wrap32 { raw_value_ + n }; }
   bool operator==( const Wrap32& other ) const { return raw_value_ == other.raw_value_; }
+  uint64_t cal_abs( unsigned long x1, unsigned long x2 ) const;
 };
