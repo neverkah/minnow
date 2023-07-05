@@ -18,27 +18,18 @@ uint64_t Wrap32::unwrap( Wrap32 zero_point, uint64_t checkpoint ) const
   u_int64_t const offset = raw_value_ < zero_point.raw_value_ ? ( 1UL << 32 ) - zero_point.raw_value_ + raw_value_
                                                               : raw_value_ - zero_point.raw_value_;
 
-  u_int64_t const index = ( checkpoint & 0xFFFFFFFF00000000 ) + offset;
-  u_int64_t const left_index = index >= 1UL << 32 ? index - ( 1UL << 32 ) : index;
-  u_int64_t const right_index = index + ( 1UL << 32 );
-  u_int64_t const index_arr[] = { left_index, index, right_index };
-  u_int64_t dis_arr[3] = {};
-  for ( int i = 0; i < 3; ++i ) {
-    dis_arr[i] = cal_abs( index_arr[i], checkpoint );
+  uint64_t const checkpoint_relative = checkpoint & UINT32_MAX;
+  u_int64_t left_index = 0;
+  u_int64_t right_index = 0;
+  if ( checkpoint_relative > offset ) {
+    left_index = ( checkpoint & 0xFFFFFFFF00000000 ) + offset;
+    right_index = left_index + ( 1UL << 32 );
+  } else {
+    right_index = ( checkpoint & 0xFFFFFFFF00000000 ) + offset;
+    left_index = right_index >= ( 1UL << 32 ) ? right_index - ( 1UL << 32 ) : right_index;
   }
-  u_int64_t min_dis = min( dis_arr[0], min( dis_arr[1], dis_arr[2] ) );
-  if ( min_dis == dis_arr[0] ) {
+  if ( checkpoint - left_index < right_index - checkpoint ) {
     return left_index;
   }
-  if ( min_dis == dis_arr[1] ) {
-    return index;
-  }
   return right_index;
-}
-u_int64_t Wrap32::cal_abs( u_int64_t x1, u_int64_t x2 ) const
-{
-  if ( x1 > x2 ) {
-    return x1 - x2;
-  }
-  return x2 - x1;
 }
