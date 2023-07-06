@@ -9,10 +9,9 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
     total_len_ = first_index + data.size();
     last_piece_appeared_ = true;
   }
-  if ( data.length() == 0 ) {
+  if ( data.empty() ) {
     if ( last_piece_appeared_ && output.bytes_pushed() == total_len_ ) {
       output.close();
-      return;
     }
     return;
   }
