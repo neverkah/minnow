@@ -1,4 +1,4 @@
-add_library (stream_copy STATIC bidirectional_stream_copy.cc)
+add_library (stream_copy STATIC bidirectional_stream_copy.cc tt3.cc)
 
 macro(add_app exec_name)
   add_executable("${exec_name}" "${exec_name}.cc")
@@ -17,3 +17,4 @@ add_app(endtoend)
 add_app(ttt)
 add_app(t2)
 add_app(t3)
+add_app(tt3)
