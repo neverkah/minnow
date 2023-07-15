@@ -1,5 +1,6 @@
 #pragma once
 
+#include "buffer.hh"
 #include "byte_stream.hh"
 #include "tcp_receiver_message.hh"
 #include "tcp_sender_message.hh"
@@ -8,6 +9,17 @@ class TCPSender
 {
   Wrap32 isn_;
   uint64_t initial_RTO_ms_;
+  std::string un_ack_buffer_ {"0"};
+  uint32_t next_send_index_ {};
+
+  Wrap32 un_ack_no_ { isn_ };
+  bool is_first_syn_ { true};
+  uint64_t bytes_pushed_count_ { 1 };
+
+  bool syn_acked_ { false };
+  bool fin_acked_ { false };
+
+  TCPReceiverMessage receiver_message_ {};
 
 public:
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */
