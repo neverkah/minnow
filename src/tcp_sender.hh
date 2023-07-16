@@ -2,26 +2,34 @@
 
 #include "buffer.hh"
 #include "byte_stream.hh"
+#include "queue"
 #include "tcp_receiver_message.hh"
 #include "tcp_sender_message.hh"
 
 class TCPSender
 {
   Wrap32 isn_;
+
   uint64_t initial_RTO_ms_;
-  std::string un_ack_buffer_ {"0"};
-  uint32_t next_send_index_ {};
+  uint64_t RTO_ms_ { initial_RTO_ms_ };
+  uint64_t timeout { initial_RTO_ms_ };
 
-  Wrap32 un_ack_no_ { isn_ };
-  bool is_first_syn_ { true};
-  uint64_t bytes_pushed_count_ { 1 };
-
-  bool syn_acked_ { false };
-  bool fin_acked_ { false };
+  uint32_t un_ack_byte_count_ { 0 };
+  uint64_t bytes_send_count_ { 0 };
+  uint64_t re_send_count_ { 0 };
 
   TCPReceiverMessage receiver_message_ {};
 
 public:
+  struct send_seg
+  {
+    Wrap32 seqno;
+    std::string buffer;
+    bool SYN { false };
+    bool FIN { false };
+    bool sended { false };
+  };
+  std::deque<send_seg> un_ack_deque_ {};
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */
   TCPSender( uint64_t initial_RTO_ms, std::optional<Wrap32> fixed_isn );
 

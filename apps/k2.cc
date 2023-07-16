@@ -12,18 +12,9 @@ int main()
   deque1.push_back( "abc" );
   deque1.push_back( "def" );
   deque1.push_back( "kkk" );
-  for ( const auto& item : deque1 ) {
-    cout << item << endl;
-  }
 
-  for ( const auto& item : deque1 ) {
-    cout << item << endl;
-  }
-  cout << "-----" << endl;
-  string string1 = *( deque1.begin() + 1 );
+  deque1.erase( deque1.begin(), deque1.begin() + 2 );
 
-  cout << string1 << endl;
-  cout << "-----" << endl;
   for ( const auto& item : deque1 ) {
     cout << item << endl;
   }

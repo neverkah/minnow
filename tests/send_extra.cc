@@ -177,17 +177,14 @@ int main()
       test.execute( ExpectSeqnosInFlight { 0 } );
       test.execute( Push { bigstring } );
 
-      size_t len = min( bigstring.size(), window_size );
-      size_t seg_count = len % TCPConfig::MAX_PAYLOAD_SIZE == 0 ? len / TCPConfig::MAX_PAYLOAD_SIZE
-                                                                : len / TCPConfig::MAX_PAYLOAD_SIZE + 1;
-      for ( unsigned int i = 0; i < seg_count; i++ ) {
-        size_t offset = i * TCPConfig::MAX_PAYLOAD_SIZE;
-        const size_t expected_size = min( TCPConfig::MAX_PAYLOAD_SIZE, len - offset );
+      for ( unsigned int i = 0; i + TCPConfig::MAX_PAYLOAD_SIZE < min( bigstring.size(), window_size );
+            i += TCPConfig::MAX_PAYLOAD_SIZE ) {
+        const size_t expected_size = min( TCPConfig::MAX_PAYLOAD_SIZE, min( bigstring.size(), window_size ) - i );
         test.execute( ExpectMessage {}
                         .with_no_flags()
                         .with_payload_size( expected_size )
-                        .with_data( bigstring.substr( offset, expected_size ) )
-                        .with_seqno( isn + 1 + offset ) );
+                        .with_data( bigstring.substr( i, expected_size ) )
+                        .with_seqno( isn + 1 + i ) );
       }
     }
 
