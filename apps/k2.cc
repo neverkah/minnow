@@ -8,14 +8,10 @@ using namespace std;
 int main()
 {
 
-  deque<string> deque1 = {};
-  deque1.push_back( "abc" );
-  deque1.push_back( "def" );
-  deque1.push_back( "kkk" );
-
-  deque1.erase( deque1.begin(), deque1.begin() + 2 );
-
-  for ( const auto& item : deque1 ) {
-    cout << item << endl;
-  }
+  int a = 1;
+  int b = 2;
+  int c = 3;
+  int d = 6;
+  bool x = a + b + c == d;
+  cout << x << endl;
 }

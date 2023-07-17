@@ -71,7 +71,7 @@ bool Reader::has_error() const
 void Reader::pop( uint64_t len )
 {
   // Your code here.
-  uint64_t const actual_len = min( len, buffer_.length() - begin_idx_ );
+  uint64_t const actual_len = min( len, bytes_buffered() );
   begin_idx_ += actual_len;
   bytes_popped_count_ += actual_len;
   if ( begin_idx_ > capacity_ / 2 ) {

@@ -54,32 +54,16 @@ optional<TCPSenderMessage> TCPSender::maybe_send()
 
 void TCPSender::push( Reader& outbound_stream )
 {
-
   if ( bytes_send_count_ >= 1 + outbound_stream.writer().bytes_pushed() + outbound_stream.writer().is_closed() ) {
     return;
   }
   // Your code here.
   const string_view peek_str = outbound_stream.peek();
-  //  if ( outbound_stream.is_finished() && peek_str.empty() ) {
-  //    if ( bytes_send_count_ == 0 ) {
-  //      un_ack_deque_.push_back( { isn_, {}, true, true } );
-  //      bytes_send_count_ += 2;
-  //      un_ack_byte_count_ += 2;
-  //    } else {
-  //      un_ack_deque_.push_back( { Wrap32::wrap( bytes_send_count_, isn_ ), {}, false, true } );
-  //      bytes_send_count_++;
-  //      un_ack_byte_count_++;
-  //    }
-  //    return;
-  //  }
-  u_int32_t available_size
+  size_t const available_size
     = receiver_message_.window_size >= un_ack_byte_count_ ? receiver_message_.window_size - un_ack_byte_count_ : 0;
-  u_int32_t stream_len
+  u_int32_t const stream_len
     = peek_str.size() + ( bytes_send_count_ == 0 ? 1 : 0 ) + outbound_stream.writer().is_closed();
-  if ( receiver_message_.window_size == un_ack_byte_count_ ) {
-    if ( peek_str.empty() && bytes_send_count_ > 0 ) {
-      return;
-    }
+  if ( receiver_message_.window_size == 0 && un_ack_byte_count_ == 0 ) {
     if ( stream_len > 0 ) {
       if ( bytes_send_count_ == 0 ) {
         un_ack_deque_.push_back( { isn_, {}, true, outbound_stream.is_finished() } );
@@ -97,48 +81,25 @@ void TCPSender::push( Reader& outbound_stream )
     return;
   }
 
-  size_t len = stream_len > available_size ? available_size : stream_len;
+  size_t const len = stream_len > available_size ? available_size : stream_len;
   if ( len > 0 ) {
-    size_t const seg_count = len % TCPConfig::MAX_PAYLOAD_SIZE == 0 ? len / TCPConfig::MAX_PAYLOAD_SIZE
-                                                                    : len / TCPConfig::MAX_PAYLOAD_SIZE + 1;
-    if ( bytes_send_count_ == 0 ) {
-
-      for ( unsigned int i = 0; i < seg_count; i++ ) {
-        size_t const offset = i * TCPConfig::MAX_PAYLOAD_SIZE;
-        const size_t expected_size = min( TCPConfig::MAX_PAYLOAD_SIZE, len - offset );
-        if ( i == 0 ) {
-          size_t pop_len = min( peek_str.length(), expected_size - 1 );
-          outbound_stream.pop( pop_len );
-          un_ack_deque_.push_back( { isn_,
-                                     { peek_str.data(), pop_len },
-                                     true,
-                                     pop_len < expected_size - 1 && outbound_stream.is_finished() } );
-        } else {
-          size_t pop_len = min( peek_str.length(), expected_size );
-          outbound_stream.pop( expected_size );
-          un_ack_deque_.push_back( { isn_ + offset,
-                                     { &peek_str[offset - 1], pop_len },
-                                     false,
-                                     pop_len < expected_size && outbound_stream.is_finished() } );
-        }
-      }
-
-    } else {
-      Wrap32 next_no = Wrap32::wrap( bytes_send_count_, isn_ );
-      for ( unsigned int i = 0; i < seg_count; i++ ) {
-        size_t const offset = i * TCPConfig::MAX_PAYLOAD_SIZE;
-        const size_t expected_size = min( TCPConfig::MAX_PAYLOAD_SIZE, len - offset );
-        size_t pop_len = min( peek_str.length(), expected_size );
-        outbound_stream.pop( pop_len );
-        un_ack_deque_.push_back( { next_no + offset,
-                                   { &peek_str[offset], pop_len },
-                                   false,
-                                   pop_len < expected_size && outbound_stream.is_finished() } );
-      }
+    unsigned int i = 0;
+    unsigned int offset = 0;
+    while ( offset < len ) {
+      Wrap32 const next_no = Wrap32::wrap( bytes_send_count_, isn_ );
+      bool SYN = bytes_send_count_ == 0 && offset == 0;
+      size_t pop_len = min( min( available_size - SYN, peek_str.length() ), TCPConfig::MAX_PAYLOAD_SIZE );
+      outbound_stream.pop( pop_len );
+      send_seg seg = { next_no,
+                       { &peek_str[i * TCPConfig::MAX_PAYLOAD_SIZE], pop_len },
+                       SYN,
+                       ( offset + SYN + pop_len ) == len - 1 };
+      un_ack_deque_.push_back( seg );
+      offset += seg.total_size();
+      i++;
+      bytes_send_count_ += seg.total_size();
+      un_ack_byte_count_ += seg.total_size();
     }
-
-    bytes_send_count_ += len;
-    un_ack_byte_count_ += len;
   }
 }
 
@@ -183,7 +144,6 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
       }
       un_ack_deque_.erase( un_ack_deque_.begin(), it );
     }
-
     receiver_message_ = msg;
   }
 }
@@ -191,4 +151,8 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
 void TCPSender::tick( const size_t ms_since_last_tick )
 {
   timeout = timeout > ms_since_last_tick ? timeout - ms_since_last_tick : 0;
+}
+uint32_t TCPSender::send_seg::total_size() const
+{
+  return SYN + buffer.size() + FIN;
 }

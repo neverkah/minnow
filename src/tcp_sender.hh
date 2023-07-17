@@ -28,6 +28,8 @@ public:
     bool SYN { false };
     bool FIN { false };
     bool sended { false };
+
+    uint32_t total_size() const;
   };
   std::deque<send_seg> un_ack_deque_ {};
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */
