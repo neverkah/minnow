@@ -77,6 +77,9 @@ void TCPSender::push( Reader& outbound_stream )
   u_int32_t stream_len
     = peek_str.size() + ( bytes_send_count_ == 0 ? 1 : 0 ) + outbound_stream.writer().is_closed();
   if ( receiver_message_.window_size == un_ack_byte_count_ ) {
+    if ( peek_str.empty() && bytes_send_count_ > 0 ) {
+      return;
+    }
     if ( stream_len > 0 ) {
       if ( bytes_send_count_ == 0 ) {
         un_ack_deque_.push_back( { isn_, {}, true, outbound_stream.is_finished() } );
