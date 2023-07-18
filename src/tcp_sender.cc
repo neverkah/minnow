@@ -61,7 +61,7 @@ void TCPSender::push( Reader& outbound_stream )
     = receiver_message_.window_size >= un_ack_byte_count_ ? receiver_message_.window_size - un_ack_byte_count_ : 0;
   size_t const stream_len
     = peek_str.size() + ( bytes_send_count_ == 0 ? 1 : 0 ) + outbound_stream.writer().is_closed();
-  if ( ( !receiver_message_.ackno.has_value() || receiver_message_.window_size == 0 ) && un_ack_byte_count_ == 0 ) {
+  if ( receiver_message_.window_size == 0 && un_ack_byte_count_ == 0 ) {
     available_size = 1;
   }
 
@@ -131,13 +131,16 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
       it++;
     }
     un_ack_deque_.erase( un_ack_deque_.begin(), it );
-    receiver_message_ = msg;
   }
+  receiver_message_ = msg;
 }
 
 void TCPSender::tick( const size_t ms_since_last_tick )
 {
   timeout = timeout > ms_since_last_tick ? timeout - ms_since_last_tick : 0;
+  if ( timeout == 0 && re_send_count_ == TCPConfig::MAX_RETX_ATTEMPTS ) {
+    re_send_count_++;
+  }
 }
 uint32_t TCPSender::send_seg::total_size() const
 {
