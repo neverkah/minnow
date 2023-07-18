@@ -8,10 +8,8 @@ using namespace std;
 int main()
 {
 
-  int a = 1;
-  int b = 2;
-  int c = 3;
-  int d = 6;
-  bool x = a + b + c == d;
-  cout << x << endl;
+  deque<string> deque1 = {};
+//  deque1.push_back( "abc" );
+  bool b = deque1.begin() == deque1.end();
+  cout << b << endl;
 }
