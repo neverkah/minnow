@@ -57,12 +57,16 @@ void TCPSender::push( Reader& outbound_stream )
     return;
   }
   const string_view peek_str = outbound_stream.peek();
-  size_t available_size
-    = receiver_message_.window_size >= un_ack_byte_count_ ? receiver_message_.window_size - un_ack_byte_count_ : 0;
+
   size_t const stream_len
     = peek_str.size() + ( bytes_send_count_ == 0 ? 1 : 0 ) + outbound_stream.writer().is_closed();
+  size_t available_size = 0;
   if ( receiver_message_.window_size == 0 && un_ack_byte_count_ == 0 ) {
     available_size = 1;
+  } else {
+    available_size = receiver_message_.window_size >= un_ack_byte_count_
+                       ? receiver_message_.window_size - un_ack_byte_count_
+                       : 0;
   }
 
   size_t const len = min( stream_len, available_size );
