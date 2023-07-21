@@ -109,15 +109,6 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
       receiver_message_ = msg;
       return;
     }
-    send_seg const un_ack_first = un_ack_deque_.front();
-    uint64_t const abs_un_ack_first_tail
-      = ( un_ack_first.seqno + un_ack_first.buffer.length() + un_ack_first.SYN ).unwrap( isn_, bytes_send_count_ );
-    if ( abs_ackno >= abs_un_ack_first_tail ) {
-      RTO_ms_ = initial_RTO_ms_;
-      timeout = RTO_ms_;
-
-      re_send_count_ = 0;
-    }
 
     auto it = un_ack_deque_.begin();
     while ( it < un_ack_deque_.end() ) {
@@ -129,6 +120,11 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
         break;
       }
       it++;
+    }
+    if ( it > un_ack_deque_.begin() ) {
+      RTO_ms_ = initial_RTO_ms_;
+      timeout = RTO_ms_;
+      re_send_count_ = 0;
     }
     un_ack_deque_.erase( un_ack_deque_.begin(), it );
   }
