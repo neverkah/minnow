@@ -6,11 +6,13 @@
 
 #include <iostream>
 #include <list>
+#include <map>
 #include <optional>
 #include <queue>
+#include <set>
 #include <unordered_map>
 #include <utility>
-
+using namespace std;
 // A "network interface" that connects IP (the internet layer, or network layer)
 // with Ethernet (the network access layer, or link layer).
 
@@ -41,6 +43,24 @@ private:
   // IP (known as Internet-layer or network-layer) address of the interface
   Address ip_address_;
 
+protected:
+  struct DgramHop
+  {
+    InternetDatagram dgram;
+    Address next_hop;
+  };
+  static constexpr size_t ARP_REPEATE_GAP = 5000;
+  static constexpr size_t IP_ETH_TTL = 30000;
+
+  std::map<uint32_t, EthernetAddress> address_map_ {};
+  std::map<uint32_t, size_t> address_ttl_map_ {};
+  // arp发送完未响应时间
+  std::map<uint32_t, size_t> arp_map_ {};
+  // 数据包队列（未获取到EthernetAddress）
+  std::queue<DgramHop> dgram_queue_ {};
+  // 待发送队列
+  std::queue<EthernetFrame> ef_queue_ {};
+
 public:
   // Construct a network interface with given Ethernet (network-access-layer) and IP (internet-layer)
   // addresses
@@ -64,4 +84,6 @@ public:
 
   // Called periodically when time elapses
   void tick( size_t ms_since_last_tick );
+
+  bool eth_addr_known( Address next_hop );
 };
