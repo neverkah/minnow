@@ -100,6 +100,7 @@ TCPSenderMessage TCPSender::send_empty_message() const
 void TCPSender::receive( const TCPReceiverMessage& msg )
 {
   // Your code here.
+  receiver_message_ = msg;
   if ( msg.ackno.has_value() ) {
     u_int64_t const abs_ackno = msg.ackno.value().unwrap( isn_, bytes_send_count_ );
     u_int64_t const abs_next_send_no = bytes_send_count_;
@@ -107,7 +108,6 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
       return;
     }
     if ( un_ack_deque_.empty() ) {
-      receiver_message_ = msg;
       return;
     }
 
@@ -129,7 +129,6 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
     }
     un_ack_deque_.erase( un_ack_deque_.begin(), it );
   }
-  receiver_message_ = msg;
 }
 
 void TCPSender::tick( const size_t ms_since_last_tick )
