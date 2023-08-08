@@ -8,6 +8,11 @@
 
 class TCPSender
 {
+  struct send_seg
+  {
+    TCPSenderMessage message;
+    bool sended { false };
+  };
   Wrap32 isn_;
 
   uint64_t initial_RTO_ms_;
@@ -19,15 +24,9 @@ class TCPSender
   uint64_t re_send_count_ { 0 };
 
   TCPReceiverMessage receiver_message_ {};
+  std::deque<send_seg> un_ack_deque_ {};
 
 public:
-  struct send_seg
-  {
-    TCPSenderMessage message;
-    bool sended { false };
-
-  };
-  std::deque<send_seg> un_ack_deque_ {};
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */
   TCPSender( uint64_t initial_RTO_ms, std::optional<Wrap32> fixed_isn );
 
