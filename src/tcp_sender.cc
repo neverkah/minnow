@@ -30,10 +30,7 @@ optional<TCPSenderMessage> TCPSender::maybe_send()
   TCPSenderMessage sender_message {};
   for ( auto& item : un_ack_deque_ ) {
     if ( timeout == 0 || !item.sended ) {
-      sender_message.SYN = item.SYN;
-      sender_message.FIN = item.FIN;
-      sender_message.seqno = item.seqno;
-      sender_message.payload = item.buffer;
+      sender_message = item.message;
       item.sended = true;
       if ( timeout == 0 ) {
         if ( receiver_message_.ackno.has_value() && receiver_message_.window_size == 0 ) {
@@ -80,15 +77,15 @@ void TCPSender::push( Reader& outbound_stream )
     bool const SYN = bytes_send_count_ == 0 && offset == 0;
     size_t pop_len = min( min( available_size - SYN, peek_str.length() ), TCPConfig::MAX_PAYLOAD_SIZE );
     outbound_stream.pop( pop_len );
-    send_seg const seg = { next_no,
-                           { &peek_str[i * TCPConfig::MAX_PAYLOAD_SIZE], pop_len },
-                           SYN,
-                           ( offset + SYN + pop_len ) == ( len - 1 ) };
+    send_seg const seg = { { next_no,
+                             SYN,
+                             { { &peek_str[i * TCPConfig::MAX_PAYLOAD_SIZE], pop_len } },
+                             ( offset + SYN + pop_len ) == ( len - 1 ) } };
     un_ack_deque_.push_back( seg );
-    offset += seg.total_size();
+    offset += seg.message.sequence_length();
     i++;
-    bytes_send_count_ += seg.total_size();
-    un_ack_byte_count_ += seg.total_size();
+    bytes_send_count_ += seg.message.sequence_length();
+    un_ack_byte_count_ += seg.message.sequence_length();
   }
 }
 
@@ -116,10 +113,10 @@ void TCPSender::receive( const TCPReceiverMessage& msg )
 
     auto it = un_ack_deque_.begin();
     while ( it < un_ack_deque_.end() ) {
-      Wrap32 const seg_tail = it->seqno + ( it->SYN + it->buffer.length() + it->FIN );
+      Wrap32 const seg_tail = it->message.seqno + it->message.sequence_length();
       u_int64_t const abs_seg_tail = seg_tail.unwrap( isn_, bytes_send_count_ );
       if ( abs_seg_tail <= abs_ackno ) {
-        un_ack_byte_count_ -= ( it->buffer.length() + it->SYN + it->FIN );
+        un_ack_byte_count_ -= it->message.sequence_length();
       } else {
         break;
       }
@@ -141,8 +138,4 @@ void TCPSender::tick( const size_t ms_since_last_tick )
   if ( timeout == 0 && re_send_count_ == TCPConfig::MAX_RETX_ATTEMPTS ) {
     re_send_count_++;
   }
-}
-uint32_t TCPSender::send_seg::total_size() const
-{
-  return SYN + buffer.size() + FIN;
 }

@@ -23,13 +23,9 @@ class TCPSender
 public:
   struct send_seg
   {
-    Wrap32 seqno;
-    std::string buffer;
-    bool SYN { false };
-    bool FIN { false };
+    TCPSenderMessage message;
     bool sended { false };
 
-    uint32_t total_size() const;
   };
   std::deque<send_seg> un_ack_deque_ {};
   /* Construct TCP sender with given default Retransmission Timeout and possible ISN */
