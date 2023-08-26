@@ -55,7 +55,7 @@ protected:
   std::map<uint32_t, EthernetAddress> address_map_ {};
   std::map<uint32_t, size_t> address_ttl_map_ {};
   // arp发送完未响应时间
-  std::map<uint32_t, size_t> arp_map_ {};
+  std::map<uint32_t, size_t> arp_not_res_time_ {};
   // 数据包队列（未获取到EthernetAddress）
   std::queue<DgramHop> dgram_queue_ {};
   // 待发送队列

@@ -36,8 +36,8 @@ void NetworkInterface::send_datagram( const InternetDatagram& dgram, const Addre
   // 加入待发送队列
   dgram_queue_.push( { dgram, next_hop } );
 
-  if ( arp_map_.find( next_hop.ipv4_numeric() ) != arp_map_.end()
-       && arp_map_[next_hop.ipv4_numeric()] <= ARP_REPEATE_GAP ) {
+  if ( arp_not_res_time_.find( next_hop.ipv4_numeric() ) != arp_not_res_time_.end()
+       && arp_not_res_time_[next_hop.ipv4_numeric()] <= ARP_REPEATE_GAP ) {
     return;
   }
   // 发送ARP报文
@@ -55,7 +55,7 @@ void NetworkInterface::send_datagram( const InternetDatagram& dgram, const Addre
   ef_queue_.push( ef );
 
   // 时间置为0
-  arp_map_[next_hop.ipv4_numeric()] = 0;
+  arp_not_res_time_[next_hop.ipv4_numeric()] = 0;
 }
 bool NetworkInterface::eth_addr_known( Address next_hop )
 {
@@ -85,7 +85,7 @@ optional<InternetDatagram> NetworkInterface::recv_frame( const EthernetFrame& fr
     address_map_[arp_message.sender_ip_address] = arp_message.sender_ethernet_address;
     address_ttl_map_[arp_message.sender_ip_address] = IP_ETH_TTL;
     // eth地址已知，删除未响应的arp信息
-    arp_map_.erase( arp_message.sender_ip_address );
+    arp_not_res_time_.erase( arp_message.sender_ip_address );
     if ( arp_message.opcode == ARPMessage::OPCODE_REQUEST ) {
       if ( arp_message.target_ip_address == ip_address_.ipv4_numeric() ) {
         // 发送ARP报文
@@ -111,7 +111,7 @@ optional<InternetDatagram> NetworkInterface::recv_frame( const EthernetFrame& fr
 // ms_since_last_tick: the number of milliseconds since the last call to this method
 void NetworkInterface::tick( const size_t ms_since_last_tick )
 {
-  for ( auto& item : arp_map_ ) {
+  for ( auto& item : arp_not_res_time_ ) {
     item.second += ms_since_last_tick;
   }
   set<u_int32_t> dated_address {};
