@@ -17,7 +17,7 @@ int main()
 string_view return_string_view()
 {
   string const s = string().assign( 2, 'x' );
-  string_view sv = s;
+  string_view const sv = s;
   const char* c = s.data();
   cout << &s << endl;
   cout << static_cast<const void*>( c ) << endl;
