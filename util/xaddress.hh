@@ -37,5 +37,5 @@ public:
   bool operator==( const XAddress& other ) const;
   bool operator!=( const XAddress& other ) const { return not operator==( other ); }
 
-  operator const sockaddr*() const { return static_cast<const sockaddr*>( _address ); } // NOLINT(*-explicit-*)
+  operator const sockaddr*() const { return ( _address ); } // NOLINT(*-explicit-*)
 };

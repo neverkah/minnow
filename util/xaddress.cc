@@ -1,10 +1,10 @@
 #include "xaddress.hh"
 
+#include "iostream"
 #include <arpa/inet.h>
 #include <cstring>
 #include <stdexcept>
 
-using namespace std;
 
 //! Converts Raw to `sockaddr *`.
 XAddress::Raw::operator sockaddr*()
@@ -15,6 +15,7 @@ XAddress::Raw::operator sockaddr*()
 //! Converts Raw to `const sockaddr *`.
 XAddress::Raw::operator const sockaddr*() const
 {
+  std::cout << "Raw::operator const called" << std::endl;
   return reinterpret_cast<const sockaddr*>( &storage ); // NOLINT(*-reinterpret-cast)
 }
 
@@ -24,7 +25,7 @@ XAddress::XAddress( const sockaddr* addr, const size_t size ) : _size( size )
 {
   // make sure proposed sockaddr can fit
   if ( size > sizeof( _address.storage ) ) {
-    throw runtime_error( "invalid sockaddr size" );
+    throw std::runtime_error( "invalid sockaddr size" );
   }
 
   memcpy( &_address.storage, addr, size );
