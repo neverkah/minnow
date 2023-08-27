@@ -9,28 +9,28 @@ class Family
 {
 private:
 public:
-  void setFamilyNo( const std::string& familyNo_ ) { Family::familyNo = familyNo_; }
+  void setFamilyNo( const std::string& family_no ) { Family::family_no_ = family_no; }
 
 public:
-  std::string familyNo;
+  std::string family_no_;
 
-  explicit Family( std::string familyNo_ ) : familyNo( std::move( familyNo_ ) ) {}
+  explicit Family( std::string family_no ) : family_no_( std::move( family_no ) ) {}
 };
 
 class Cat
 {
 private:
-  std::string name {};
+  std::string name_ {};
 
   //    int age;
 public:
-  const Family& family;
+  const Family& family_;
 
-  const std::string& getName() const { return name; }
+  const std::string& getName() const { return name_; }
 
-  explicit Cat( const Family& family_ ) : family( family_ ) {}
+  explicit Cat( const Family& family ) : family_( family ) {}
 
-  Cat( std::string name_, const Family& family_ ) : name( std::move( name_ ) ), family( family_ ) {}
+  Cat( std::string name, const Family& family ) : name_( std::move( name ) ), family_( family ) {}
 };
 
 int main()
@@ -47,7 +47,7 @@ int main()
   Cat catf = Cat { f };
   std::string newNo = "newf";
   f = Family { newNo };
-  std::cout << catf.family.familyNo << std::endl;
+  std::cout << catf.family_.family_no_ << std::endl;
 
   std::cout << cat.getName() << std::endl;
 }

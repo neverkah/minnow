@@ -8,19 +8,18 @@ int main()
 {
   string got;
   auto peeked = return_string_view();
-  char pc = peeked.front();
-  char* pcp = &pc;
-  cout << &pcp << endl;
-  got += pc;
+  cout << &peeked << endl;
+  got += peeked;
   cout << got << endl;
+
   return 0;
 }
 string_view return_string_view()
 {
   string const s = string().assign( 2, 'x' );
-  auto sv = string_view( s.c_str() );
-  char c = sv.front();
-  char* cp = &c;
-  cout << &cp << endl;
+  string_view sv = s;
+  const char* c = s.data();
+  cout << &s << endl;
+  cout << static_cast<const void*>( c ) << endl;
   return sv;
 }
