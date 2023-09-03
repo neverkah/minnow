@@ -30,8 +30,8 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
     }
   }
   // merge
-  block_node node = block_node( first_index, data );
-  block_node const base_node = { node.last_index_ + 1, {} };
+  BlockNode node = BlockNode( first_index, data );
+  BlockNode const base_node = { node.last_index_ + 1, {} };
   auto lower_it = blocks_.lower_bound( base_node );
   while ( lower_it != blocks_.end() && lower_it->last_index_ + 1 >= node.first_index_ ) {
     merge_data( node, *lower_it );
@@ -56,7 +56,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   }
 }
 
-void Reassembler::merge_data( Reassembler::block_node& node, const Reassembler::block_node& killed_node )
+void Reassembler::merge_data( Reassembler::BlockNode& node, const Reassembler::BlockNode& killed_node )
 {
   string left_str = {};
   string right_str = {};

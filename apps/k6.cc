@@ -18,11 +18,14 @@ int main()
   df.insert( { address, ETHERNET_BROADCAST } );
   df.insert( { address2, ETHERNET_BROADCAST } );
   df.insert( { address3, ETHERNET_BROADCAST } );
+  cout << ( df.begin()->first.operator const sockaddr *() ) << endl;
+  cout << address.operator const sockaddr *() << endl;
+  cout << "---" << endl;
   bool not_found = df.find( address ) == df.end();
-  XAddress::Raw raw {};
-  sockaddr* xx = raw;
-  sockaddr* yy = raw.operator sockaddr*();
-  cout << xx << endl;
-  cout << yy << endl;
+//  XAddress::Raw raw {};
+//  sockaddr* xx = raw;
+//  sockaddr* yy = raw.operator sockaddr*();
+//  cout << xx << endl;
+//  cout << yy << endl;
   cout << not_found << endl;
 }
