@@ -131,24 +131,17 @@ void NetworkInterface::tick( const size_t ms_since_last_tick )
 
 optional<EthernetFrame> NetworkInterface::maybe_send()
 {
+  if ( ef_queue_.empty() && !dgram_queue_.empty() ) {
+    DgramHop const distDgram = dgram_queue_.front();
+    if ( eth_addr_known( distDgram.next_hop ) ) {
+      dgram_queue_.pop();
+      send_datagram( distDgram.dgram, distDgram.next_hop );
+    }
+  }
   if ( !ef_queue_.empty() ) {
     EthernetFrame ef = ef_queue_.front();
     ef_queue_.pop();
     return ef;
-  }
-
-  if ( !dgram_queue_.empty() ) {
-    DgramHop const distDgram = dgram_queue_.front();
-
-    if ( eth_addr_known( distDgram.next_hop ) ) {
-      dgram_queue_.pop();
-      EthernetFrame ef {};
-      ef.header.src = ethernet_address_;
-      ef.header.dst = address_map_[distDgram.next_hop.ipv4_numeric()];
-      ef.header.type = EthernetHeader::TYPE_IPv4;
-      ef.payload = serialize( distDgram.dgram );
-      return ef;
-    }
   }
   return {};
 }
