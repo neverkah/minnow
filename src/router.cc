@@ -58,7 +58,7 @@ optional<Router::Route> Router::matchRoute( const uint32_t dst )
   optional<Route> op_match_route {};
   uint8_t match_length = 0;
   for ( const auto& route : routes_ ) {
-    uint32_t const mask = route.prefix_length_ > 0 ? 0xffffffff << ( 32 - route.prefix_length_ ) : 0;
+    uint32_t const mask = route.prefix_length_ > 0 ? UINT32_MAX << ( 32 - route.prefix_length_ ) : 0;
     if ( ( dst & mask ) == route.route_prefix_ && route.prefix_length_ >= match_length ) {
       op_match_route = route;
       match_length = route.prefix_length_;
