@@ -57,7 +57,7 @@ void NetworkInterface::send_datagram( const InternetDatagram& dgram, const Addre
   // 时间置为0
   arp_not_res_time_[next_hop.ipv4_numeric()] = 0;
 }
-bool NetworkInterface::eth_addr_known( Address next_hop )
+bool NetworkInterface::eth_addr_known( const Address& next_hop )
 {
   return address_map_.find( next_hop.ipv4_numeric() ) != this->address_map_.end();
 }

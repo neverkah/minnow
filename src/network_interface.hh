@@ -85,5 +85,5 @@ public:
   // Called periodically when time elapses
   void tick( size_t ms_since_last_tick );
 
-  bool eth_addr_known( Address next_hop );
+  bool eth_addr_known(const Address& next_hop );
 };
